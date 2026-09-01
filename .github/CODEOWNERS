@@ -1,2 +1,6 @@
-# TODO: replace with the actual GitHub handle(s) that should review every PR.
-* @TODO-set-code-owner
+# Reviewers are auto-requested from this list on every pull request. Add the other
+# two developers' GitHub handles here so review requests do not all land on one
+# person. Code-owner review is deliberately not *required* in the branch rulesets:
+# on a personal-account repo this can only name individuals, not a team, so
+# requiring it would make every pull request wait on one specific human.
+* @ShivajiVS
