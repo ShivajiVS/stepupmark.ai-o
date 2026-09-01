@@ -2,16 +2,25 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
+  # Scoped to the two protected branches so a stacked feature-to-feature pull
+  # request does not run the whole suite twice.
   pull_request:
+    branches: [main, staging]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
+# The fallbacks are not cosmetic: env.ts validates VITE_API_URL with z.url(), so an
+# unset variable resolves to "" and fails the build with an error that reads like a
+# code bug. Nothing calls this URL in CI; it only has to parse.
 env:
-  VITE_API_URL: http://localhost:3001/api
-  VITE_ENABLE_MSW: "true"
+  VITE_API_URL: ${{ vars.VITE_API_URL || 'http://localhost:3001/api' }}
+  VITE_ENABLE_MSW: ${{ vars.VITE_ENABLE_MSW || 'true' }}
 
 jobs:
   verify:
@@ -28,15 +37,64 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Every check runs even when an earlier one fails, so a single run reports
+      # everything that is broken instead of only the first thing.
       - run: pnpm lint
 
       - run: pnpm format:check
+        if: ${{ !cancelled() }}
 
       - run: pnpm typecheck
+        if: ${{ !cancelled() }}
 
       - run: pnpm test:run
+        if: ${{ !cancelled() }}
 
       - run: pnpm build
+        if: ${{ !cancelled() }}
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      # Full history. A secret committed three commits ago and deleted in the
+      # fourth is still in the pack, and still leaked.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # No config file: the built-in ruleset is what we want, and an allowlist
+      # would have to pre-bless paths, which is how a real key pasted into a
+      # mock file gets waved through.
+      #
+      # The artifact is off because artifacts on a public repository are
+      # downloadable by anyone, so uploading a SARIF of detected secrets would
+      # publish the very thing the job exists to catch. Comments are off because
+      # they need pull-requests: write, and the job log already names the file
+      # and line.
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
+          GITLEAKS_ENABLE_COMMENTS: false
+
+      - uses: actions/dependency-review-action@v5
+        if: github.event_name == 'pull_request'
+        with:
+          fail-on-severity: high
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      # Reads the lockfile directly, so no install is needed. Only production
+      # dependencies gate the merge: a dev-only advisory never reaches a user,
+      # and blocking on one teaches people to bypass the check.
+      - run: pnpm audit --prod --audit-level=high
+
+      - run: pnpm audit --audit-level=high
+        continue-on-error: true
 
   e2e:
     runs-on: ubuntu-latest
