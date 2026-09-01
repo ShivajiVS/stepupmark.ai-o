@@ -1,0 +1,9 @@
+node_modules/
+build/
+.react-router/
+coverage/
+playwright-report/
+blob-report/
+test-results/
+pnpm-lock.yaml
+public/mockServiceWorker.js

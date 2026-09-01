@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+      production-dependencies:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+    ignore:
+      # typescript-eslint declares `typescript: "<6.1.0"` as of 8.67 — moving past 6.0.3
+      # silently disables type-aware linting. Revisit when typescript-eslint supports TS 7.
+      - dependency-name: "typescript"
+        versions: [">=6.1.0"]
+      # jsdom 30 requires Node ^24.15.0; this project's floor is 22.22.1. Revisit if the
+      # Node floor rises.
+      - dependency-name: "jsdom"
+        versions: [">=30.0.0"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"

@@ -1,0 +1,30 @@
+{
+  "singleQuote": false,
+  "semi": true,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "tabWidth": 2,
+  "plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
+  "tailwindStylesheet": "src/styles/app.css",
+  "importOrder": [
+    "<BUILTIN_MODULES>",
+    "",
+    "^react(/.*)?$",
+    "^react-dom(/.*)?$",
+    "^react-router(/.*)?$",
+    "^@react-router/(.*)$",
+    "",
+    "<THIRD_PARTY_MODULES>",
+    "",
+    "^~/app/(.*)$",
+    "^~/features/(.*)$",
+    "^~/components/(.*)$",
+    "^~/hooks/(.*)$",
+    "^~/services/(.*)$",
+    "^~/lib/(.*)$",
+    "^~/(.*)$",
+    "",
+    "^[.]"
+  ],
+  "importOrderTypeScriptVersion": "6.0.3"
+}
