@@ -6,7 +6,7 @@ export default function PublicLayout() {
   return (
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-16">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-16">
         <Outlet />
       </main>
       <footer className="border-t">

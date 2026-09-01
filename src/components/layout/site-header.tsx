@@ -12,7 +12,7 @@ export function SiteHeader() {
     <header className="border-b">
       <nav
         aria-label="Main"
-        className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4"
+        className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4"
       >
         <Link to="/">
           <img src="/stepupmark-logo.png" alt="stepupmark" className="h-8 w-auto" />
