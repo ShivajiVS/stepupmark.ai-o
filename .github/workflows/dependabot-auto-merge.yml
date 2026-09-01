@@ -1,0 +1,29 @@
+name: Dependabot auto-merge
+
+# pull_request_target so the token can write. Nothing here checks out or runs the
+# pull request's code, which is what makes that trigger safe to use.
+on: pull_request_target
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    # Never main: a release into production is a deliberate human act, even when
+    # the only change is a lockfile bump that already passed QA on staging.
+    if: github.actor == 'dependabot[bot]' && github.event.pull_request.base.ref == 'staging'
+    runs-on: ubuntu-latest
+    steps:
+      - id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Majors stay manual: the two pins in dependabot.yml exist because a major
+      # can break the toolchain in ways CI does not catch.
+      - if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
